@@ -87,10 +87,10 @@ def Accuracy(pred_y,true_y):
     return Accuracy
 
 def main():
-    trainData="data/digitdata/trainingimages"
-    DataLabels="data/digitdata/traininglabels"
-    testData ="data/digitdata/testimages"
-    TestLabels="data/digitdata/testlabels"
+    trainData="data/digit/trainingimages"
+    DataLabels="data/digit/traininglabels"
+    testData ="data/digit/testimages"
+    TestLabels="data/digit/testlabels"
     x_train,y_train=proccessingData(trainData,DataLabels)
     x_test, y_test=proccessingData(testData,TestLabels)
     DataPercent=int(x_train.shape[0]/10)
