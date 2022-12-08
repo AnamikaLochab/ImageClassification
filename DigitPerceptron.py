@@ -1,5 +1,5 @@
 import numpy as np
-import matplotlib as plt
+import matplotlib.pyplot as plt
 import time
 
 def sigmoid_func(s):
@@ -134,6 +134,21 @@ def main():
         pred_y = Prediction(x,x_test)
         TestAccuracy.append(Accuracy(pred_y,y_test))
         print("Training Data percent = ", (i + 1)*10, " Time taken = ", timeTaken[i], " Accuracy = ", TestAccuracy[i])
+    x = np.arange(10, 101, 10)
+    plt.plot(x, timeTaken, label='time', color="red")
+    plt.xlabel('Percentage of Training Data')
+    plt.title("Time in Perceptron for Digit data")
+    plt.ylabel("Time Taken")
+    plt.tight_layout()
+
+    plt.show()
+    x = np.arange(10, 101, 10)
+    plt.plot(x, TestAccuracy, label='time', color="red")
+    plt.xlabel('Percentage of Training Data')
+    plt.title("Accuracy in Perceptron for Digit data")
+    plt.ylabel("Test Accuracy")
+    plt.tight_layout()
+    plt.show()
     # for i in range(10):
     #     print("Data percent = ", (i+1)*10, " Time taken = ",timeTaken[i]," Accuracy = ",TestAccuracy[i])
 
