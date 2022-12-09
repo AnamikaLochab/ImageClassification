@@ -1,6 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import time
+import random
+from statistics import mean, stdev
 
 def get_label(Labels):
     file_lines = open(Labels).readlines()
@@ -87,39 +89,62 @@ def Accuracy(pred_y,true_y):
     return Accuracy
 
 def main():
-    trainData="data/digitdata/trainingimages"
-    DataLabels="data/digitdata/traininglabels"
-    testData ="data/digitdata/testimages"
-    TestLabels="data/digitdata/testlabels"
+    trainData="data/digit/trainingimages"
+    DataLabels="data/digit/traininglabels"
+    testData ="data/digit/testimages"
+    TestLabels="data/digit/testlabels"
     x_train,y_train=proccessingData(trainData,DataLabels)
+    train = []
+    for i in range(x_train.shape[0]):
+        train.append((x_train[i], y_train[i]))
     x_test, y_test=proccessingData(testData,TestLabels)
     DataPercent=int(x_train.shape[0]/10)
-    timeTaken=[]
-    TestAccuracy=[]
+    MeanTimeTaken = []
+    MeanTestAccuracy = []
+    StdDeviation = []
 
     for i in range(10):
-        s=time.time()
-        probabilityFL,prior=probability(x_train[0:DataPercent*(i+1)],y_train[0:DataPercent*(i+1)],1)
-        pred_y = buildModel(x_test,probabilityFL,prior)
-        end = time.time()
-        timeTaken.append(end - s)
-        TestAccuracy.append(Accuracy(pred_y,y_test))
-        print("Training Data percent = ", (i + 1)*10, " Time taken = ", timeTaken[i], " Accuracy = ", TestAccuracy[i])
+        timeTaken=[]
+        TestAccuracy=[]
+        for k in range(5):
+            input = random.sample(train, DataPercent * (i + 1))
+            x_data = []
+            y_data = []
+            for j in range(len(input)):
+                x_data.append(input[j][0])
+                y_data.append(input[j][1])
+            s=time.time()
+            probabilityFL,prior=probability(np.array(x_data),np.array(y_data),1)
+            pred_y = buildModel(x_test,probabilityFL,prior)
+            end = time.time()
+            timeTaken.append(end - s)
+            TestAccuracy.append(Accuracy(pred_y,y_test))
+        MeanTimeTaken.append(mean(timeTaken))
+        MeanTestAccuracy.append(mean(TestAccuracy))
+        StdDeviation.append(stdev(TestAccuracy))
+        print("Training Data percent = ", (i + 1)*10, " Average Time taken = ", mean(timeTaken), " Average Accuracy = ", mean(TestAccuracy), "Standard Deviation of Accuracy = ", stdev(TestAccuracy))
     x = np.arange(10, 101, 10)
-    plt.plot(x, timeTaken, label='time', color="red")
+    plt.plot(x, MeanTimeTaken, label='time', color="red")
     plt.xlabel('Percentage of Training Data')
-    plt.title("Time for training and testing in NB for Digit data")
-    plt.ylabel("Time taken")
-    #plt.tight_layout()
+    plt.title("Average Time for training and testing in NB for Digit data")
+    plt.ylabel("Average Time Taken")
+    plt.tight_layout()
+
     plt.show()
     x = np.arange(10, 101, 10)
-    plt.plot(x, TestAccuracy, label='time', color="red")
+    plt.plot(x, MeanTestAccuracy, label='time', color="red")
     plt.xlabel('Percentage of Training Data')
-    plt.title("Accuracy in NB for Digit data")
-    plt.ylabel("Test Accuracy")
+    plt.title("Average Accuracy in NB for Digit data")
+    plt.ylabel("Average Test Accuracy")
     plt.tight_layout()
     plt.show()
-    # for i in range(10):
-    #     print("Data percent = ", (i+1)*10, " Time taken = ",timeTaken[i]," Accuracy = ",TestAccuracy[i])
+
+    x = np.arange(10, 101, 10)
+    plt.plot(x, StdDeviation, label='time', color="red")
+    plt.xlabel('Percentage of Training Data')
+    plt.title("Standard Deviation of Accuracy in NB for Digit data")
+    plt.ylabel("Standard Deviation")
+    plt.tight_layout()
+    plt.show()
 
 main()

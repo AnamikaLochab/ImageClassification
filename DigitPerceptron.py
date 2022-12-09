@@ -1,6 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import time
+import random
+from statistics import mean, stdev
 
 def sigmoid_func(s):
     return 1/(1+np.exp(-s))
@@ -41,7 +43,7 @@ def proccessingData(FileData,FileLabel):
 
 def trainmodel(x_train,y_train, lr,iteration):
     x = np.random.rand(x_train.shape[1],10)
-    print("Y_train",y_train.shape)
+    # print("Y_train",y_train.shape)
     iteration_count=[]
     acc_iteration_count=[]
     for it in range(iteration):
@@ -60,36 +62,12 @@ def trainmodel(x_train,y_train, lr,iteration):
                 x[:, y_train[i]] = x[:,y_train[i]] + temp[:,0]
                 x[:, P_temp] = x[:,P_temp] - temp[:,0]
         acc_iteration_count.append(100 - (e / len(x_train)) * 100)
-        print(acc_iteration_count[it])
+        # print(acc_iteration_count[it])
         if(e==0):
             break
     return x
 def activationf(f):
     return np.where(f>0,1,0)
-
-# def Model(x_train,y_train,lr,iteration):
-#     length,n_features=x_train.shape
-#     weights=np.zeros(n_features)
-#     bias=0
-#     y = np.where(y_train>0,1,0)
-#     for i in range(iteration):
-#         for index,x in enumerate(x_train):
-#             f=np.dot(x,weights) + bias
-#             pred_y=activationf(f)
-#             update = lr*(y[index]-pred_y)
-#             weights = weights+update*x
-#             bias= bias+ update
-#     return weights,bias
-
-# def Prediction(weights,bias,x_test):
-#     l=x_test.shape[0]
-#     # temp = np.dot(x_test,x)
-#     # y_pred = np.zeros(temp.shape[0])
-#     # x= x.reshape(x_test.shape[1],10)
-#     for i in range(l):
-#         f = np.dot(x_test, weights) + bias
-#         pred_y = activationf(f)
-#     return pred_y
 
 def Prediction(x,x_test):
     l=x_test.shape[0]
@@ -109,47 +87,69 @@ def Accuracy(pred_y,true_y):
     for i in range(l):
         if(predY[i] == true_y[i]):
             c=c+1
-        print(predY[i],true_y[i])
+        # print(predY[i],true_y[i])
     Accuracy=c/l
-    print(c," ",l)
+    # print(c," ",l)
     return Accuracy
 
 def main():
-    trainData="data/digitdata/trainingimages"
-    DataLabels="data/digitdata/traininglabels"
-    testData ="data/digitdata/testimages"
-    TestLabels="data/digitdata/testlabels"
+    trainData="data/digit/trainingimages"
+    DataLabels="data/digit/traininglabels"
+    testData ="data/digit/testimages"
+    TestLabels="data/digit/testlabels"
     x_train,y_train=proccessingData(trainData,DataLabels)
+    train = []
+    for i in range(x_train.shape[0]):
+        train.append((x_train[i], y_train[i]))
     x_test, y_test=proccessingData(testData,TestLabels)
     DataPercent=int(x_train.shape[0]/10)
-    timeTaken=[]
-    TestAccuracy=[]
+    MeanTimeTaken = []
+    MeanTestAccuracy = []
+    StdDeviation = []
 
     for i in range(10):
-        s=time.time()
-        #probabilityFL,prior=probability(x_train[0:DataPercent*(i+1)],y_train[0:DataPercent*(i+1)],1)
-        x = trainmodel(x_train[0:DataPercent*(i+1)],y_train[0:DataPercent*(i+1)],0.09,20)
-        end=time.time()
-        timeTaken.append(end-s)
-        pred_y = Prediction(x,x_test)
-        TestAccuracy.append(Accuracy(pred_y,y_test))
-        print("Training Data percent = ", (i + 1)*10, " Time taken = ", timeTaken[i], " Accuracy = ", TestAccuracy[i])
+        timeTaken=[]
+        TestAccuracy=[]
+        for k in range(5):
+            input = random.sample(train, DataPercent * (i + 1))
+            x_data = []
+            y_data = []
+            for j in range(len(input)):
+                x_data.append(input[j][0])
+                y_data.append(input[j][1])
+            s=time.time()
+            # x = trainmodel(x_train[0:DataPercent*(i+1)],y_train[0:DataPercent*(i+1)],0.09,20)
+            x = trainmodel(np.array(x_data),np.array(y_data),0.09,20)
+            end=time.time()
+            timeTaken.append(end-s)
+            pred_y = Prediction(x,x_test)
+            TestAccuracy.append(Accuracy(pred_y,y_test))
+        MeanTimeTaken.append(mean(timeTaken))
+        MeanTestAccuracy.append(mean(TestAccuracy))
+        StdDeviation.append(stdev(TestAccuracy))
+        print("Training Data percent = ", (i + 1)*10, " Average Time taken = ", mean(timeTaken), " Average Accuracy = ", mean(TestAccuracy), "Standard Deviation of Accuracy = ", stdev(TestAccuracy))
     x = np.arange(10, 101, 10)
-    plt.plot(x, timeTaken, label='time', color="red")
+    plt.plot(x, MeanTimeTaken, label='time', color="red")
     plt.xlabel('Percentage of Training Data')
-    plt.title("Time in Perceptron for Digit data")
-    plt.ylabel("Time Taken")
+    plt.title("Average Time in Perceptron for Digit data")
+    plt.ylabel("Average Time Taken")
     plt.tight_layout()
 
     plt.show()
     x = np.arange(10, 101, 10)
-    plt.plot(x, TestAccuracy, label='time', color="red")
+    plt.plot(x, MeanTestAccuracy, label='time', color="red")
     plt.xlabel('Percentage of Training Data')
-    plt.title("Accuracy in Perceptron for Digit data")
-    plt.ylabel("Test Accuracy")
+    plt.title("Average Accuracy in Perceptron for Digit data")
+    plt.ylabel("Average Test Accuracy")
     plt.tight_layout()
     plt.show()
-    # for i in range(10):
-    #     print("Data percent = ", (i+1)*10, " Time taken = ",timeTaken[i]," Accuracy = ",TestAccuracy[i])
+
+    x = np.arange(10, 101, 10)
+    plt.plot(x, StdDeviation, label='time', color="red")
+    plt.xlabel('Percentage of Training Data')
+    plt.title("Standard Deviation of Accuracy in Perceptron for Digit data")
+    plt.ylabel("Standard Deviation")
+    plt.tight_layout()
+    plt.show()
 
 main()
